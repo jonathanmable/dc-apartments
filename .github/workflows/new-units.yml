@@ -1,5 +1,5 @@
 # Opens one issue when the tracker (run on a laptop) reports units that newly pass its filters. GitHub then emails
-# the repo's watchers. Triggered only by repository_dispatch, which needs write access to this repo. Free: public repo.
+# the repo's watchers, and the cc mention emails the owner either way. Triggered only by repository_dispatch, which needs write access to this repo. Free: public repo.
 name: new-units
 on:
   repository_dispatch:
@@ -18,5 +18,6 @@ jobs:
             await github.rest.issues.create({
               owner: context.repo.owner, repo: context.repo.repo,
               title: String(p.title || 'New units').slice(0, 200),
-              body: String(p.body || '').slice(0, 60000),
+              // The mention makes GitHub email the owner even if the repo isn't watched.
+              body: String(p.body || '').slice(0, 60000) + '\n\ncc @' + context.repo.owner,
             });
