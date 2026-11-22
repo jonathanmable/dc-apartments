@@ -1,0 +1,22 @@
+# Opens one issue when the tracker (run on a laptop) reports units that newly pass its filters. GitHub then emails
+# the repo's watchers. Triggered only by repository_dispatch, which needs write access to this repo. Free: public repo.
+name: new-units
+on:
+  repository_dispatch:
+    types: [new-units]
+permissions:
+  issues: write
+jobs:
+  issue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const p = context.payload.client_payload || {};
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: String(p.title || 'New units').slice(0, 200),
+              body: String(p.body || '').slice(0, 60000),
+            });
